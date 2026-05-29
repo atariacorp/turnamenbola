@@ -20,7 +20,9 @@ import { getTournamentHistory } from './utils/storage'
 export const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} })
 
 function App() {
-  // === ALL HOOKS AT TOP ===
+  // ============================================================
+  // 1. SEMUA useState HARUS DI ATAS (SEBELUM APAPUN)
+  // ============================================================
   const [step, setStep] = useState(0)
   const [players, setPlayers] = useState([])
   const [clubs, setClubs] = useState([])
@@ -39,11 +41,12 @@ function App() {
   const [totalChampions, setTotalChampions] = useState(0)
   const [userName, setUserName] = useState(() => localStorage.getItem('app_user_name') || '')
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  
-  // Room State
-  const [roomMode, setRoomMode] = useState(null) // null, 'create', 'join', 'in-room'
+  const [roomMode, setRoomMode] = useState(null)
   const [roomData, setRoomData] = useState(null)
 
+  // ============================================================
+  // 2. SEMUA useEffect HARUS DI SINI (SEBELUM FUNGSI LAIN)
+  // ============================================================
   useEffect(() => {
     const history = getTournamentHistory()
     setTotalTournaments(history.length)
@@ -51,17 +54,20 @@ function App() {
     setTotalChampions(uniqueWinners.size)
   }, [])
 
+  useEffect(() => {
+    localStorage.setItem('theme', theme)
+    document.documentElement.style.backgroundColor = theme === 'dark' ? '#1a1a2e' : '#f0f0f0'
+  }, [theme])
+
+  // ============================================================
+  // 3. FUNGSI-FUNGSI (TIDAK MEMPENGARUHI JUMLAH HOOK)
+  // ============================================================
   const showToast = (message, type = 'info') => {
     setNotificationMessage(message)
     setNotificationType(type)
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 3000)
   }
-
-  useEffect(() => {
-    localStorage.setItem('theme', theme)
-    document.documentElement.style.backgroundColor = theme === 'dark' ? '#1a1a2e' : '#f0f0f0'
-  }, [theme])
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'
@@ -80,7 +86,6 @@ function App() {
     setTotalTournaments(prev => prev + 1)
   }
 
-  // Room Handlers
   const handleCreateRoom = (data) => {
     setRoomData(data)
     setRoomMode('in-room')
@@ -101,6 +106,10 @@ function App() {
     showToast('Meninggalkan room', 'info')
   }
 
+  // ============================================================
+  // 4. CONDITIONAL RETURN HANYA BOLEH SETELAH SEMUA HOOK
+  // ============================================================
+  
   // Jika dalam mode room
   if (roomMode === 'in-room' && roomData) {
     return (
@@ -127,6 +136,9 @@ function App() {
     )
   }
 
+  // ============================================================
+  // 5. RENDER STEP (TIDAK MEMPENGARUHI JUMLAH HOOK)
+  // ============================================================
   const renderStep = () => {
     switch(step) {
       case 0:
@@ -147,8 +159,6 @@ function App() {
             </div>
           </div>
         )
-      
-      // ==================== DESAIN PROFESIONAL Pilih Format Turnamen ====================
       case 4:
         return (
           <div style={{
@@ -156,7 +166,6 @@ function App() {
             background: 'linear-gradient(135deg, #0a0a1a, #0f0f2a, #1a1a3e)',
             minHeight: '600px'
           }}>
-            {/* Header Section */}
             <div style={{ textAlign: 'center', marginBottom: '56px' }}>
               <div style={{
                 display: 'inline-flex',
@@ -186,7 +195,6 @@ function App() {
               </p>
             </div>
 
-            {/* Tournament Format Cards Grid */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
@@ -195,8 +203,7 @@ function App() {
               margin: '0 auto',
               marginBottom: '48px'
             }}>
-              
-              {/* 1. KNOCKOUT CARD */}
+              {/* Knockout Card */}
               <div
                 onClick={() => { setFormat('knockout'); setStep(5); showToast('🏆 Format Sistem Gugur dipilih', 'info') }}
                 style={{
@@ -211,16 +218,6 @@ function App() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-12px)'
-                  e.currentTarget.style.borderColor = '#ef4444'
-                  e.currentTarget.style.boxShadow = '0 30px 50px -15px rgba(239,68,68,0.35)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
               >
                 <div style={{
                   position: 'absolute',
@@ -231,7 +228,6 @@ function App() {
                   background: 'linear-gradient(90deg, #ef4444, #f97316)',
                   borderRadius: '32px 32px 0 0'
                 }} />
-                
                 <div style={{
                   width: '88px',
                   height: '88px',
@@ -245,14 +241,8 @@ function App() {
                 }}>
                   <span style={{ fontSize: '44px' }}>🏆</span>
                 </div>
-                
-                <h3 style={{ fontSize: '26px', fontWeight: 'bold', marginBottom: '8px', color: '#fff' }}>
-                  Sistem Gugur
-                </h3>
-                <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
-                  Knockout • Single Elimination
-                </p>
-                
+                <h3 style={{ fontSize: '26px', fontWeight: 'bold', marginBottom: '8px', color: '#fff' }}>Sistem Gugur</h3>
+                <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>Knockout • Single Elimination</p>
                 <div style={{
                   background: 'rgba(255,255,255,0.05)',
                   borderRadius: '16px',
@@ -260,26 +250,15 @@ function App() {
                   marginBottom: '24px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '13px', color: '#cbd5e1' }}>
-                    <span>⚡ Cepat</span>
-                    <span>🎯 1x Pertemuan</span>
-                    <span>🏆 Langsung Juara</span>
+                    <span>⚡ Cepat</span><span>🎯 1x Pertemuan</span><span>🏆 Langsung Juara</span>
                   </div>
                 </div>
-                
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  color: '#ef4444',
-                  fontSize: '15px',
-                  fontWeight: '600'
-                }}>
-                  <span>Pilih Format</span>
-                  <span style={{ transition: 'transform 0.2s' }}>→</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: '#ef4444', fontSize: '15px', fontWeight: '600' }}>
+                  <span>Pilih Format</span><span>→</span>
                 </div>
               </div>
 
-              {/* 2. GROUP STAGE CARD */}
+              {/* Group Stage Card */}
               <div
                 onClick={() => { setFormat('group'); setStep(5); showToast('📊 Format Fase Grup dipilih', 'info') }}
                 style={{
@@ -294,16 +273,6 @@ function App() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-12px)'
-                  e.currentTarget.style.borderColor = '#3b82f6'
-                  e.currentTarget.style.boxShadow = '0 30px 50px -15px rgba(59,130,246,0.35)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.borderColor = 'rgba(59,130,246,0.25)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
               >
                 <div style={{
                   position: 'absolute',
@@ -314,7 +283,6 @@ function App() {
                   background: 'linear-gradient(90deg, #3b82f6, #06b6d4)',
                   borderRadius: '32px 32px 0 0'
                 }} />
-                
                 <div style={{
                   width: '88px',
                   height: '88px',
@@ -328,14 +296,8 @@ function App() {
                 }}>
                   <span style={{ fontSize: '44px' }}>📊</span>
                 </div>
-                
-                <h3 style={{ fontSize: '26px', fontWeight: 'bold', marginBottom: '8px', color: '#fff' }}>
-                  Fase Grup
-                </h3>
-                <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
-                  Group Stage + Knockout
-                </p>
-                
+                <h3 style={{ fontSize: '26px', fontWeight: 'bold', marginBottom: '8px', color: '#fff' }}>Fase Grup</h3>
+                <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>Group Stage + Knockout</p>
                 <div style={{
                   background: 'rgba(255,255,255,0.05)',
                   borderRadius: '16px',
@@ -343,26 +305,15 @@ function App() {
                   marginBottom: '24px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '13px', color: '#cbd5e1' }}>
-                    <span>📋 Setiap Bertemu</span>
-                    <span>📊 Klasemen</span>
-                    <span>🏆 Lolos Knockout</span>
+                    <span>📋 Setiap Bertemu</span><span>📊 Klasemen</span><span>🏆 Lolos Knockout</span>
                   </div>
                 </div>
-                
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  color: '#3b82f6',
-                  fontSize: '15px',
-                  fontWeight: '600'
-                }}>
-                  <span>Pilih Format</span>
-                  <span style={{ transition: 'transform 0.2s' }}>→</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: '#3b82f6', fontSize: '15px', fontWeight: '600' }}>
+                  <span>Pilih Format</span><span>→</span>
                 </div>
               </div>
 
-              {/* 3. LEAGUE CARD */}
+              {/* League Card */}
               <div
                 onClick={() => { setFormat('league'); setStep(6) }}
                 style={{
@@ -377,16 +328,6 @@ function App() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-12px)'
-                  e.currentTarget.style.borderColor = '#10b981'
-                  e.currentTarget.style.boxShadow = '0 30px 50px -15px rgba(16,185,129,0.35)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.borderColor = 'rgba(16,185,129,0.25)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
               >
                 <div style={{
                   position: 'absolute',
@@ -397,7 +338,6 @@ function App() {
                   background: 'linear-gradient(90deg, #10b981, #14b8a6)',
                   borderRadius: '32px 32px 0 0'
                 }} />
-                
                 <div style={{
                   width: '88px',
                   height: '88px',
@@ -411,14 +351,8 @@ function App() {
                 }}>
                   <span style={{ fontSize: '44px' }}>⚽</span>
                 </div>
-                
-                <h3 style={{ fontSize: '26px', fontWeight: 'bold', marginBottom: '8px', color: '#fff' }}>
-                  Liga Penuh
-                </h3>
-                <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
-                  Full League • Round Robin
-                </p>
-                
+                <h3 style={{ fontSize: '26px', fontWeight: 'bold', marginBottom: '8px', color: '#fff' }}>Liga Penuh</h3>
+                <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>Full League • Round Robin</p>
                 <div style={{
                   background: 'rgba(255,255,255,0.05)',
                   borderRadius: '16px',
@@ -426,111 +360,22 @@ function App() {
                   marginBottom: '24px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '13px', color: '#cbd5e1' }}>
-                    <span>⚽ Semua Bertemu</span>
-                    <span>📊 Klasemen</span>
-                    <span>🏆 Poin Penuh</span>
+                    <span>⚽ Semua Bertemu</span><span>📊 Klasemen</span><span>🏆 Poin Penuh</span>
                   </div>
                 </div>
-                
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  color: '#10b981',
-                  fontSize: '15px',
-                  fontWeight: '600'
-                }}>
-                  <span>Pilih Format</span>
-                  <span style={{ transition: 'transform 0.2s' }}>→</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: '#10b981', fontSize: '15px', fontWeight: '600' }}>
+                  <span>Pilih Format</span><span>→</span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Navigation Buttons */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '16px',
-              maxWidth: '400px',
-              margin: '0 auto',
-              flexWrap: 'wrap'
-            }}>
-              <button
-                onClick={() => setStep(7)}
-                style={{
-                  padding: '12px 24px',
-                  background: 'rgba(139,92,246,0.2)',
-                  border: '1px solid rgba(139,92,246,0.4)',
-                  borderRadius: '40px',
-                  color: '#a78bfa',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(139,92,246,0.3)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(139,92,246,0.2)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                🏅 Hall of Fame
-              </button>
-              <button
-                onClick={() => setStep(8)}
-                style={{
-                  padding: '12px 24px',
-                  background: 'rgba(245,158,11,0.2)',
-                  border: '1px solid rgba(245,158,11,0.4)',
-                  borderRadius: '40px',
-                  color: '#fbbf24',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(245,158,11,0.3)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(245,158,11,0.2)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                ⚙️ Pengaturan
-              </button>
-              <button
-                onClick={() => setStep(2)}
-                style={{
-                  padding: '12px 24px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '40px',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                ← Kembali ke Tim
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', maxWidth: '400px', margin: '0 auto', flexWrap: 'wrap' }}>
+              <button onClick={() => setStep(7)} style={{ padding: '12px 24px', background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)', borderRadius: '40px', color: '#a78bfa', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>🏅 Hall of Fame</button>
+              <button onClick={() => setStep(8)} style={{ padding: '12px 24px', background: 'rgba(245,158,11,0.2)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '40px', color: '#fbbf24', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>⚙️ Pengaturan</button>
+              <button onClick={() => setStep(2)} style={{ padding: '12px 24px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '40px', color: '#94a3b8', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}>← Kembali ke Tim</button>
             </div>
           </div>
         )
-      
       case 5:
         if (format === 'knockout') return <KnockoutScreen participants={assignments} onBack={() => setStep(4)} onComplete={handleTournamentComplete} />
         if (format === 'group') return <GroupStageScreen participants={assignments} onBack={() => setStep(4)} onComplete={(winners) => { showToast(`Lolos ke knockout: ${winners.join(', ')}`, 'success'); setStep(4) }} />
@@ -587,7 +432,6 @@ function App() {
           maxWidth: '1400px', margin: '0 auto', backgroundColor: theme === 'dark' ? '#1e1e2e' : 'white',
           borderRadius: '20px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden', minHeight: '600px'
         }}>
-          {/* Header */}
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px',
             background: theme === 'dark' ? '#0f0f1a' : '#f8f9fa', borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#e0e0e0'}`, flexWrap: 'wrap', gap: '10px'
@@ -623,7 +467,6 @@ function App() {
             </div>
           </div>
 
-          {/* Step Indicators */}
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', background: theme === 'dark' ? '#0a0a0f' : '#f0f0f0', borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`, fontSize: '11px' }}>
             {['Welcome', 'Pemain', 'Tim', 'Assign', 'Format', 'Turnamen'].map((label, idx) => (
               <div key={idx} style={{ flex: 1, textAlign: 'center', opacity: step >= idx ? 1 : 0.4, color: step === idx ? '#667eea' : (theme === 'dark' ? '#888' : '#999'), fontWeight: step === idx ? 'bold' : 'normal' }}>
