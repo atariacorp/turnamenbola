@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_SUPABASE_URL": "https://cratftxiahkwzabntizo.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyYXRmdHhpYWhrd3phYm50aXpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MDUyMTEsImV4cCI6MjA2Mzk4MTIxMX0.f_U2QHu-5Y4aavfQs8YRDoA0xGc2kqLxMSJ2zCM0Qbk"
+  }
+}
