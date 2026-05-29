@@ -8,6 +8,8 @@ import GroupStageScreen from './screens/GroupStageScreen'
 import LeagueScreen from './screens/LeagueScreen'
 import HallOfFameScreen from './screens/HallOfFameScreen'
 import SettingsScreen from './screens/SettingsScreen'
+import RoomScreen from './screens/RoomScreen'
+import RoomLobby from './screens/RoomLobby'
 import InstallPrompt from './components/InstallPrompt'
 import OfflineNotice from './components/OfflineNotice'
 import UpdateNotification from './components/UpdateNotification'
@@ -37,6 +39,10 @@ function App() {
   const [totalChampions, setTotalChampions] = useState(0)
   const [userName, setUserName] = useState(() => localStorage.getItem('app_user_name') || '')
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  
+  // Room State
+  const [roomMode, setRoomMode] = useState(null) // null, 'create', 'join', 'in-room'
+  const [roomData, setRoomData] = useState(null)
 
   useEffect(() => {
     const history = getTournamentHistory()
@@ -72,6 +78,53 @@ function App() {
   const handleTournamentComplete = (winner, tournamentName) => {
     showToast(`🏆 Selamat! ${winner} menjadi juara ${tournamentName}! 🏆`, 'celebration')
     setTotalTournaments(prev => prev + 1)
+  }
+
+  // Room Handlers
+  const handleCreateRoom = (data) => {
+    setRoomData(data)
+    setRoomMode('in-room')
+    showToast(`Room ${data.roomCode} berhasil dibuat! Bagikan kode ini ke teman Anda`, 'success')
+  }
+
+  const handleJoinRoom = (data) => {
+    setRoomData(data)
+    setRoomMode('in-room')
+    showToast(`Berhasil bergabung ke room ${data.roomCode}`, 'success')
+  }
+
+  const handleLeaveRoom = () => {
+    setRoomMode(null)
+    setRoomData(null)
+    localStorage.removeItem('current_room_code')
+    localStorage.removeItem('current_room_id')
+    showToast('Meninggalkan room', 'info')
+  }
+
+  // Jika dalam mode room
+  if (roomMode === 'in-room' && roomData) {
+    return (
+      <RoomLobby 
+        roomData={roomData} 
+        onLeave={handleLeaveRoom}
+        theme={theme}
+        showToast={showToast}
+        userName={userName}
+      />
+    )
+  }
+
+  // Jika memilih untuk membuat/join room
+  if (roomMode === 'create' || roomMode === 'join') {
+    return (
+      <RoomScreen 
+        theme={theme}
+        onCreateRoom={handleCreateRoom}
+        onJoinRoom={handleJoinRoom}
+        showToast={showToast}
+        initialMode={roomMode}
+      />
+    )
   }
 
   const renderStep = () => {
@@ -520,6 +573,7 @@ function App() {
     { id: 4, label: '🎮 Mulai', action: () => setStep(4), active: step === 4 || step === 5 || step === 6 },
     { id: 7, label: '🏅 Hall of Fame', action: () => setStep(7), active: step === 7 },
     { id: 8, label: '⚙️ Settings', action: () => setStep(8), active: step === 8 },
+    { id: 'room', label: '🎮 Room', action: () => setRoomMode('create'), active: roomMode !== null },
   ]
 
   return (
